@@ -30,7 +30,7 @@ jobs:
 
       - name: Save EC2 Public IP
         run: |
-          echo "EC2_IP=$(terraform output -raw ec2_public_ip)" >> $GITHUB_ENV
+          echo "EC2_IP=$(terraform output ec2_public_ip)" >> $GITHUB_ENV
 
   ansible:
     needs: terraform
