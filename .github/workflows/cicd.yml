@@ -1,10 +1,46 @@
-name: CI/CD for Spring Boot
+name: CI/CD for Spring Boot with Infra Setup (Terraform & Ansible)
 on:
   push:
     branches:
       - main
 
 jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="ssh_public_key='$(echo "${{ secrets.EC2_SSH_KEY }}" | ssh-keygen -y)'"
+        working-directory: terraform
+
+      - name: Save EC2 Public IP
+        run: |
+          echo "EC2_IP=$(terraform output -raw ec2_public_ip)" >> $GITHUB_ENV
+
+  ansible:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Ansible
+        run: sudo apt update && sudo apt install -y ansible
+
+      - name: Run Ansible Playbook
+        run: ansible-playbook -i "${{ env.EC2_IP }}," ansible/playbook.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+
   deploy:
     runs-on: ubuntu-latest
     needs: ansible
