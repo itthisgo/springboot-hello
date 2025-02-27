@@ -25,7 +25,6 @@ jobs:
 
       - name: Setup SSH Key
         run: |
-          mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
           chmod 600 ~/.ssh/github-action-key
           ls -l ~/.ssh
