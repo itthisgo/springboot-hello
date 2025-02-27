@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set Timezone to KST
+        run: |
+          sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+          echo "Timezone set to: $(date)"
+
       - name: Checkout Code
         uses: actions/checkout@v2
 
