@@ -18,8 +18,13 @@ jobs:
         run: terraform init
         working-directory: terraform
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var="ssh_public_key='$(echo "${{ secrets.EC2_SSH_KEY }}" | ssh-keygen -y)'"
+      - name: Apply Terraform
+        run: |
+          terraform apply -auto-approve \
+            -var "ec2_ssh_key=${{ secrets.EC2_SSH_KEY }}" \
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         working-directory: terraform
 
       - name: Save EC2 Public IP
