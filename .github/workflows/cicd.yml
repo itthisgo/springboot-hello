@@ -26,14 +26,15 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
+          chmod 600 ~/.ssh/github-action-key
           ls -l ~/.ssh
 
       - name: Deploy to AWS EC2
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu/app.jar
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+          ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} "mkdir -p /home/ubuntu"
+          scp -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no build/libs/*.jar ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu/app.jar
+          ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
             sudo pkill -f 'java -jar'
             nohup java -jar /home/ubuntu/app.jar > /dev/null 2>&1 &
           EOF
