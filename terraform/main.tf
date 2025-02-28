@@ -78,6 +78,22 @@ resource "aws_instance" "my_server" {
   }
 }
 
+provisioner "remote-exec" {
+    inline = [
+      "mkdir -p ~/.ssh",
+      "echo '${var.ec2_ssh_key}' >> ~/.ssh/authorized_keys",
+      "chmod 600 ~/.ssh/authorized_keys"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"  # Amazon Linux는 "ec2-user"
+      private_key = file(var.ec2_ssh_key_file)  # 🔥 GitHub Actions에서 SSH 키를 전달해야 함
+      host        = self.public_ip
+    }
+  }
+}
+
 # 생성된 EC2의 Public IP 출력
 output "ec2_public_ip" {
   value = aws_instance.my_server.public_ip
