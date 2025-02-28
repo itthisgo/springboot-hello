@@ -68,7 +68,7 @@ jobs:
           ssh-add -l  # ✅ SSH 에이전트에 추가된 키 확인
 
       - name: Debug EC2_IP before Ansible
-        run: echo "Connecting to EC2 at: $EC2_IP"
+        run: echo "$EC2_IP"
 
       - name: Run Ansible Playbook
         run: |
