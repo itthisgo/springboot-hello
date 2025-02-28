@@ -60,6 +60,16 @@ jobs:
       - name: Debug EC2_IP before Ansible
         run: echo "$EC2_IP"
 
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
+          chmod 600 ~/.ssh/github-action-key
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/github-action-key
+          ls -l ~/.ssh  # 디버깅: SSH 키가 제대로 설정되었는지 확인
+          cat ~/.ssh/github-action-key
+
       - name: Run Ansible Playbook
         run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml --private-key ~/.ssh/github-action-key
         env:
