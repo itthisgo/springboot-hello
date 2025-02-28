@@ -63,9 +63,7 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/myserver.pem
           chmod 400 ~/.ssh/myserver.pem  # ✅ AWS 보안 정책 준수
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/myserver.pem
           ls -l ~/.ssh
-          ssh-add -l  # ✅ SSH 에이전트에 추가된 키 확인
 
       - name: Debug EC2_IP before Ansible
         run: |
