@@ -48,7 +48,7 @@ jobs:
     needs: terraform
     runs-on: ubuntu-latest
     env:
-      EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}  # Terraform Output을 env에 저장
+      EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}
 
     steps:
       - name: Checkout Repository
@@ -57,21 +57,20 @@ jobs:
       - name: Install Ansible
         run: sudo apt update && sudo apt install -y ansible
 
-      - name: Debug EC2_IP before Ansible
-        run: echo "$EC2_IP"
-
-      - name: Setup SSH Key
+      - name: Setup SSH Key (Using GitHub Secrets)
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
-          chmod 600 ~/.ssh/github-action-key
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/myserver.pem
+          chmod 600 ~/.ssh/myserver.pem
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/github-action-key
+          ssh-add ~/.ssh/myserver.pem
           ls -l ~/.ssh  # 디버깅: SSH 키가 제대로 설정되었는지 확인
-          cat ~/.ssh/github-action-key
+
+      - name: Debug SSH Key
+        run: ssh-add -l  # SSH 에이전트에 키가 추가되었는지 확인
 
       - name: Run Ansible Playbook
-        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml --private-key ~/.ssh/myserver.pem -u ubuntu
+        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
