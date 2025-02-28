@@ -47,6 +47,9 @@ jobs:
   ansible:
     needs: terraform
     runs-on: ubuntu-latest
+    env:
+      EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}  # Terraform Output을 env에 저장
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -55,10 +58,10 @@ jobs:
         run: sudo apt update && sudo apt install -y ansible
 
       - name: Debug EC2_IP before Ansible
-        run: echo "EC2_IP from Terraform: ${{ needs.terraform.outputs.ec2_ip }}"
+        run: echo "EC2_IP from Terraform: $EC2_IP"
 
       - name: Run Ansible Playbook
-        run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," ansible/playbook.yml
+        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
