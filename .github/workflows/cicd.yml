@@ -34,6 +34,7 @@ jobs:
         id: get_ec2_ip
         run: |
           EC2_IP=$(terraform output -raw ec2_public_ip | tr -d '\n' 2>/dev/null || echo "NOT_SET")
+          echo "EC2_IP=$EC2_IP"
           if [ "$EC2_IP" == "NOT_SET" ]; then
             echo "EC2 Public IP not found! Deployment cannot proceed."
             exit 1
