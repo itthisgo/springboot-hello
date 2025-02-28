@@ -83,9 +83,9 @@ jobs:
 
       - name: Deploy to AWS EC2
         run: |
-          ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }}
-          scp -T -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no build/libs/springboot-hello-0.0.1-SNAPSHOT.jar ubuntu@${{ secrets.EC2_IP }}:/home/ubuntu/app.jar
-          ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+          ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_IP }}
+          scp -T -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no build/libs/springboot-hello-0.0.1-SNAPSHOT.jar ubuntu@${{ env.EC2_IP }}:/home/ubuntu/app.jar
+          ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_IP }} << 'EOF'
             sudo pkill -f 'java -jar'
             nohup java -jar /home/ubuntu/app.jar > /dev/null 2>&1 &
           EOF
