@@ -9,7 +9,7 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     outputs:
-      ec2_ip: ${{ steps.get_ec2_ip.outputs.ec2_public_ip }}  # Terraform에서 EC2_IP를 output으로 저장
+      ec2_ip: ${{ steps.get_ec2_ip.outputs.ec2_ip }}  # Terraform에서 EC2 IP를 Outputs으로 저장
 
     steps:
       - name: Checkout Repository
@@ -35,17 +35,18 @@ jobs:
       - name: Save EC2 Public IP to Outputs
         id: get_ec2_ip
         run: |
-            EC2_IP=$(terraform output -raw ec2_public_ip | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n1)
-            if [ -z "$EC2_IP" ]; then
-              echo "EC2 Public IP not found! Deployment cannot proceed."
-              exit 1
-            fi
-            echo "EC2_IP=$EC2_IP" >> $GITHUB_ENV
+          EC2_IP=$(terraform output -raw ec2_public_ip)  # Terraform에서 Public IP 가져오기
+          if [ -z "$EC2_IP" ]; then
+            echo "EC2 Public IP not found! Deployment cannot proceed."
+            exit 1
+          fi
+          echo "Extracted EC2_IP: $EC2_IP"
+          echo "::set-output name=ec2_ip::$EC2_IP"  # GitHub Actions Outputs에 저장
+        working-directory: terraform
 
   ansible:
     needs: terraform
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -53,35 +54,23 @@ jobs:
       - name: Install Ansible
         run: sudo apt update && sudo apt install -y ansible
 
+      - name: Debug EC2_IP before Ansible
+        run: echo "EC2_IP from Terraform: ${{ needs.terraform.outputs.ec2_ip }}"
+
       - name: Run Ansible Playbook
+        run: ansible-playbook -i "${{ needs.terraform.outputs.ec2_ip }}," ansible/playbook.yml
         env:
-          EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}
           ANSIBLE_HOST_KEY_CHECKING: "False"
-        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml          
 
   deploy:
     runs-on: ubuntu-latest
     needs: ansible
+    env:
+      EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}  # Terraform의 outputs에서 EC2_IP 가져오기
 
     steps:
-      - name: Set Timezone to KST
-        run: |
-          sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
-          echo "Timezone set to: $(date)"
-
-      - name: Checkout Code
-        uses: actions/checkout@v2
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Build with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew build -x test
+      - name: Debug EC2_IP before Deploy
+        run: echo "EC2_IP from Terraform: $EC2_IP"
 
       - name: Setup SSH Key
         run: |
@@ -91,14 +80,11 @@ jobs:
           ls -l ~/.ssh
 
       - name: Check EC2_IP before SSH
-        env:
-          EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}
         run: |
           if [ -z "$EC2_IP" ]; then
             echo "EC2_IP is empty! Deployment cannot proceed."
             exit 1
           fi
-
       - name: Deploy to AWS EC2
         env:
           EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}
