@@ -58,6 +58,9 @@ jobs:
       - name: Install Ansible
         run: sudo apt update && sudo apt install -y ansible
 
+      - name: Debug EC2_IP before Ansible
+        run: echo "EC2_IP from Terraform: $EC2_IP"
+
       - name: Run Ansible Playbook
         run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml
         env:
@@ -95,6 +98,9 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
           chmod 600 ~/.ssh/github-action-key
           ls -l ~/.ssh
+
+      - name: Debug EC2_IP before Deploy
+        run: echo "EC2_IP from Terraform: $EC2_IP"
 
       - name: Check EC2_IP before SSH
         run: |
