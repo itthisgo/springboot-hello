@@ -61,13 +61,22 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
-          chmod 600 ~/.ssh/github-action-key
+          chmod 400 ~/.ssh/github-action-key  # ✅ AWS 보안 정책 준수
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/github-action-key
           ls -l ~/.ssh
+          ssh-add -l  # ✅ SSH 에이전트에 추가된 키 확인
+
+      - name: Debug EC2_IP before Ansible
+        run: echo "Connecting to EC2 at: $EC2_IP"
 
       - name: Run Ansible Playbook
-        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu
+        run: |
+          echo "Running Ansible Playbook on: $EC2_IP"
+          ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu --private-key ~/.ssh/github-action-key
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+
 
   deploy:
     runs-on: ubuntu-latest
