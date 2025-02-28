@@ -71,7 +71,7 @@ jobs:
           cat ~/.ssh/github-action-key
 
       - name: Run Ansible Playbook
-        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml --private-key ~/.ssh/github-action-key
+        run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml --private-key ~/.ssh/myserver.pem -u ubuntu
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
