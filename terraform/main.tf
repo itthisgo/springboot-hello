@@ -21,7 +21,7 @@ data "aws_subnet" "default" {
 }
 
 # 기존 보안 그룹이 있는지 확인
-data "aws_security_groups" "existing_sg" {
+data "aws_security_group" "existing_sg" {
   filter {
     name   = "group-name"
     values = ["springboot-hello-sg"]
@@ -30,7 +30,7 @@ data "aws_security_groups" "existing_sg" {
 
 # 보안 그룹이 없으면 새로 생성
 resource "aws_security_group" "my_sg" {
-  count       = length(data.aws_security_groups.existing_sg.ids) > 0 ? 0 : 1
+  count       = length(data.aws_security_group.existing_sg.id) > 0 ? 0 : 1
   name        = "springboot-hello-sg"
   description = "Allow inbound traffic"
   vpc_id      = data.aws_vpc.default.id  # 기본 VPC에 배치
@@ -70,15 +70,15 @@ resource "aws_instance" "my_server" {
   instance_type          = "t2.micro"
   key_name               = var.key_name
   subnet_id              = data.aws_subnet.default.id  # 기본 VPC의 서브넷 사용
-  vpc_security_group_ids = length(data.aws_security_groups.existing_sg.ids) > 0 ? [data.aws_security_groups.existing_sg.ids[0]] : [aws_security_group.my_sg[0].id]
+  vpc_security_group_ids = length(data.aws_security_group.existing_sg.id) > 0 ? [data.aws_security_group.existing_sg.id] : [aws_security_group.my_sg[0].id]
   associate_public_ip_address = true  # 퍼블릭 IP 할당
 
   tags = {
     Name = "springboot-hello-ec2"
   }
-}
 
-provisioner "remote-exec" {
+  # ✅ EC2 생성 후 SSH 키 자동 추가
+  provisioner "remote-exec" {
     inline = [
       "mkdir -p ~/.ssh",
       "echo '${var.ec2_ssh_key}' >> ~/.ssh/authorized_keys",
@@ -88,7 +88,7 @@ provisioner "remote-exec" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Amazon Linux는 "ec2-user"
-      private_key = file(var.ec2_ssh_key_file)  # 🔥 GitHub Actions에서 SSH 키를 전달해야 함
+      private_key = file("~/.ssh/github-action-key")  # ✅ GitHub Actions에서 전달한 SSH 키 사용
       host        = self.public_ip
     }
   }
