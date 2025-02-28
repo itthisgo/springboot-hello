@@ -57,14 +57,12 @@ jobs:
       - name: Install Ansible
         run: sudo apt update && sudo apt install -y ansible
 
-      - name: Setup SSH Key (Using GitHub Secrets)
+      - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/myserver.pem
-          chmod 600 ~/.ssh/myserver.pem
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/myserver.pem
-          ls -l ~/.ssh  # 디버깅: SSH 키가 제대로 설정되었는지 확인
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
+          chmod 600 ~/.ssh/github-action-key
+          ls -l ~/.ssh
 
       - name: Run Ansible Playbook
         run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu

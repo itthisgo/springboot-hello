@@ -9,3 +9,5 @@ variable "key_name" {
   type        = string
   default     = "myserver"  # 기존 AWS Key Pair 이름 사용
 }
+
+
