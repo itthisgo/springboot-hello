@@ -76,22 +76,6 @@ resource "aws_instance" "my_server" {
   tags = {
     Name = "springboot-hello-ec2"
   }
-
-  # ✅ EC2 생성 후 SSH 키 자동 추가
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir -p ~/.ssh",
-      "echo '${var.ec2_ssh_key}' >> ~/.ssh/authorized_keys",
-      "chmod 600 ~/.ssh/authorized_keys"
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "ubuntu"  # Amazon Linux는 "ec2-user"
-      private_key = file("~/.ssh/github-action-key")  # ✅ GitHub Actions에서 전달한 SSH 키 사용
-      host        = self.public_ip
-    }
-  }
 }
 
 # 생성된 EC2의 Public IP 출력
