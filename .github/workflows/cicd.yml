@@ -65,6 +65,7 @@ jobs:
           ls -l ~/.ssh
 
       - name: Run Ansible Playbook
+        uses: cross-the-world/ssh-pipeline@v1.2.0
         run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
