@@ -60,10 +60,10 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/github-action-key
-          chmod 400 ~/.ssh/github-action-key  # ✅ AWS 보안 정책 준수
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/myserver.pem
+          chmod 400 ~/.ssh/myserver.pem  # ✅ AWS 보안 정책 준수
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/github-action-key
+          ssh-add ~/.ssh/myserver.pem
           ls -l ~/.ssh
           ssh-add -l  # ✅ SSH 에이전트에 추가된 키 확인
 
@@ -73,7 +73,7 @@ jobs:
       - name: Run Ansible Playbook
         run: |
           echo "Running Ansible Playbook on: $EC2_IP"
-          ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu --private-key ~/.ssh/github-action-key
+          ansible-playbook -i "$EC2_IP," ansible/playbook.yml -u ubuntu --private-key ~/.ssh/myserver.pem
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
