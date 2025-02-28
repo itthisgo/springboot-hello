@@ -83,6 +83,7 @@ jobs:
 
       - name: Deploy to AWS EC2
         run: |
+          echo "Connecting to EC2 at IP: ${{ env.EC2_IP }}"
           ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_IP }}
           scp -T -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no build/libs/springboot-hello-0.0.1-SNAPSHOT.jar ubuntu@${{ env.EC2_IP }}:/home/ubuntu/app.jar
           ssh -i ~/.ssh/github-action-key -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_IP }} << 'EOF'
