@@ -8,8 +8,7 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    outputs:
-      ec2_ip: ${{ steps.get_ec2_ip.outputs.ec2_ip }} # Terraform에서 EC2_IP 출력
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -46,8 +45,7 @@ jobs:
   ansible:
     needs: terraform
     runs-on: ubuntu-latest
-    env:
-      EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}  # terraform job에서 나온 IP를 사용
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -63,8 +61,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: ansible
-    env:
-      EC2_IP: ${{ needs.terraform.outputs.ec2_ip }}  # terraform job에서 나온 IP를 사용
 
     steps:
       - name: Set Timezone to KST
