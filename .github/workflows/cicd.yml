@@ -96,9 +96,6 @@ jobs:
           chmod 600 ~/.ssh/github-action-key
           ls -l ~/.ssh
 
-      - name: Debug EC2_IP before Deploy
-        run: echo "EC2_IP from Terraform: $EC2_IP"
-
       - name: Check EC2_IP before SSH
         run: |
           if [ -z "$EC2_IP" ]; then
