@@ -7,25 +7,30 @@ data "aws_vpc" "default" {
   id = "vpc-0a26da92d28ec58b9"
 }
 
-# 기본 VPC 내에서 사용 가능한 서브넷 가져오기
+# 기본 VPC 내에서 특정 가용 영역(AZ)의 서브넷 가져오기
 data "aws_subnet" "default" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+    values = ["vpc-0a26da92d28ec58b9"]
+  }
+
+  filter {
+    name   = "availability-zone"
+    values = ["ap-northeast-2a"]  # 가용 영역 지정
   }
 }
 
 # 기존 보안 그룹이 있는지 확인
-data "aws_security_group" "existing_sg" {
+data "aws_security_groups" "existing_sg" {
   filter {
     name   = "group-name"
     values = ["springboot-hello-sg"]
   }
 }
 
-# 보안 그룹이 없을 경우 새로 생성
+# 보안 그룹이 없으면 새로 생성
 resource "aws_security_group" "my_sg" {
-  count       = length(data.aws_security_group.existing_sg.id) > 0 ? 0 : 1
+  count       = length(data.aws_security_groups.existing_sg.ids) > 0 ? 0 : 1
   name        = "springboot-hello-sg"
   description = "Allow inbound traffic"
   vpc_id      = data.aws_vpc.default.id  # 기본 VPC에 배치
@@ -65,7 +70,7 @@ resource "aws_instance" "my_server" {
   instance_type          = "t2.micro"
   key_name               = var.key_name
   subnet_id              = data.aws_subnet.default.id  # 기본 VPC의 서브넷 사용
-  vpc_security_group_ids = length(data.aws_security_group.existing_sg.id) > 0 ? [data.aws_security_group.existing_sg.id] : [aws_security_group.my_sg[0].id]
+  vpc_security_group_ids = length(data.aws_security_groups.existing_sg.ids) > 0 ? [data.aws_security_groups.existing_sg.ids[0]] : [aws_security_group.my_sg[0].id]
   associate_public_ip_address = true  # 퍼블릭 IP 할당
 
   tags = {
