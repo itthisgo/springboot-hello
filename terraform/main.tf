@@ -73,6 +73,15 @@ resource "aws_instance" "my_server" {
   vpc_security_group_ids = length(data.aws_security_group.existing_sg.id) > 0 ? [data.aws_security_group.existing_sg.id] : [aws_security_group.my_sg[0].id]
   associate_public_ip_address = true  # 퍼블릭 IP 할당
 
+  # ✅ EC2 부팅 시 기존 SSH 키를 authorized_keys에 추가
+  user_data = <<-EOF
+    #!/bin/bash
+    mkdir -p /home/ubuntu/.ssh
+    echo "${var.ec2_ssh_key}" >> /home/ubuntu/.ssh/authorized_keys
+    chmod 600 /home/ubuntu/.ssh/authorized_keys
+    chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+  EOF
+
   tags = {
     Name = "springboot-hello-ec2"
   }
