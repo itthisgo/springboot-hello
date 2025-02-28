@@ -58,7 +58,7 @@ jobs:
         run: sudo apt update && sudo apt install -y ansible
 
       - name: Debug EC2_IP before Ansible
-        run: echo "EC2_IP from Terraform: ${{ env.EC2_IP }}"
+        run: echo "$EC2_IP"
 
       - name: Run Ansible Playbook
         run: ansible-playbook -i "$EC2_IP," ansible/playbook.yml
