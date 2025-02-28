@@ -36,7 +36,7 @@ jobs:
             exit 1
           fi
           echo "EC2_IP=$EC2_IP" >> $GITHUB_ENV
-          working-directory: terraform
+        working-directory: terraform
 
 
   ansible:
